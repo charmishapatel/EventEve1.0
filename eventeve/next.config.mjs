@@ -2,8 +2,15 @@
 const nextConfig = {
     reactStrictMode: true,
     images: {
-        domains: ["localhost"],
+      remotePatterns: [
+        {
+          protocol: "https",
+          hostname: "eventeve.onrender.com",
+          pathname: "/images/**",
+        },
+      ],
     },
-};
-
-export default nextConfig;
+  };
+  
+  export default nextConfig;
+  
