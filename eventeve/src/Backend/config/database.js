@@ -1,13 +1,11 @@
 require("dotenv").config();
 const { Pool } = require("pg");
 
-// ✅ PostgreSQL Configuration
 const pool = new Pool({
-  user: process.env.DB_USER || "postgres",  // Default user
-  host: process.env.DB_HOST || "localhost", 
-  database: process.env.DB_NAME || "event_management",
-  password: process.env.DB_PASSWORD || "",  // Ensure this is set
-  port: process.env.DB_PORT || 5432, 
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false, // Required for Render PostgreSQL
+  },
 });
 
 // ✅ Test the connection
