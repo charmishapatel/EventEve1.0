@@ -14,7 +14,7 @@ export default function ServiceDetails() {
         const fetchItems = async () => {
             try {
                 console.log(`Fetching items for service ID: ${id}`);
-                const response = await fetch(`http://localhost:5000/api/service/${id}`);
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/service/${id}`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }

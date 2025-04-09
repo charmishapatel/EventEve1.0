@@ -18,7 +18,7 @@ export default function ItemDetailsPage() {
     const fetchItem = async () => {
       try {
         const res = await fetch(
-          `http://localhost:5000/api/item/name/${encodeURIComponent(id)}`
+          `${process.env.NEXT_PUBLIC_API_BASE}/api/item/name/${encodeURIComponent(id)}`
         );
         if (!res.ok) throw new Error("Failed to fetch item");
         const data = await res.json();
