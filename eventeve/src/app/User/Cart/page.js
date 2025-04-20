@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import Header from "@/app/components/Header/page";
@@ -7,10 +5,10 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { loadStripe } from "@stripe/stripe-js";
 
+// ✅ Automatically picks up from .env.local
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE;
+
 const stripePromise = loadStripe("pk_test_51RBMQyRvozgqRzKOJw9aNhBfrgkptKFExmyx3giiFADMehxcVW4OtjzHwE5AubqLko2f3aEYWpT94zBtso4D9IpJ00JIRqxIwp");
-
-
-
 
 const Cart = () => {
   const router = useRouter();
@@ -19,17 +17,15 @@ const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-
-
   const handleCheckout = async () => {
     const stripe = await stripePromise;
-  
-    const res = await fetch("http://localhost:5000/api/payment/create-checkout-session", {
+
+    const res = await fetch(`${BASE_URL}/api/payment/create-checkout-session`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ items: cartItems }),
     });
-  
+
     const { id } = await res.json();
     await stripe.redirectToCheckout({ sessionId: id });
   };
@@ -37,7 +33,7 @@ const Cart = () => {
   useEffect(() => {
     const fetchCart = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/cart/${userId}`);
+        const res = await fetch(`${BASE_URL}/api/cart/${userId}`);
         if (!res.ok) throw new Error("Failed to fetch cart items");
         const data = await res.json();
         console.log("🛒 Cart items fetched:", data);
@@ -56,40 +52,32 @@ const Cart = () => {
     (total, item) => total + item.price * item.quantity,
     0
   );
-  
+
   const handleRemove = async (itemid) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/cart/${userId}/${itemid}`, {
+      const res = await fetch(`${BASE_URL}/api/cart/${userId}/${itemid}`, {
         method: "DELETE",
       });
-  
+
       if (!res.ok) throw new Error("Failed to remove item");
-  
-      // 🧹 Remove from local state
+
       setCartItems((prev) => prev.filter((item) => item.itemid !== itemid));
-  
-      // 🛒 (Optional) update cart count if you're using localStorage
-      // 🛒 Update cart count in localStorage
-        const newCount = cartItems
+
+      const newCount = cartItems
         .filter((item) => item.itemid !== itemid)
         .reduce((total, item) => total + item.quantity, 0);
 
-        localStorage.setItem("cartCount", newCount);
-        window.dispatchEvent(new Event("cartCountUpdated"));
+      localStorage.setItem("cartCount", newCount);
+      window.dispatchEvent(new Event("cartCountUpdated"));
 
-  
     } catch (err) {
       console.error("❌ Error removing item:", err);
     }
   };
-  
-
-  
 
   return (
     <div className="min-h-screen bg-gray-100 text-black p-6">
       <Header />
-
       <h2 className="text-2xl font-semibold text-center">Your Cart</h2>
 
       {loading ? (
@@ -103,21 +91,15 @@ const Cart = () => {
               key={item.cartid}
               className="bg-white max-w-6xl mx-auto mt-6 p-4 border border-black mb-4 min-h-[150px] flex"
             >
-              {/* Item Image */}
               <img
                 src={item.imageurl || "/images/default.jpg"}
                 alt={item.name}
                 className="w-24 h-28 rounded-lg object-cover border"
               />
-
-              {/* Item Info */}
               <div className="flex-1 ml-4 flex flex-col justify-between">
                 <h3 className="text-lg font-medium">{item.name}</h3>
                 <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
               </div>
-
-              {/* Price Info */}
-              {/* Price Info + Remove Button */}
               <div className="flex flex-col justify-between text-right">
                 <button
                   onClick={() => handleRemove(item.itemid)}
@@ -137,18 +119,15 @@ const Cart = () => {
                   = ${(item.quantity * item.price).toFixed(2)}
                 </p>
               </div>
-
             </div>
           ))}
 
-          {/* Total */}
           <div className="text-center mt-6">
             <p className="text-xl font-semibold">
               Total: ${totalAmount.toFixed(2)}
             </p>
           </div>
 
-          {/* Checkout Button */}
           <div className="flex justify-center mt-4">
             <button
               className="w-[250px] bg-[#624DAD] text-white py-3 rounded-lg text-lg font-semibold"
@@ -157,11 +136,14 @@ const Cart = () => {
               Request Booking
             </button>
           </div>
-          <div>
-          <button onClick={handleCheckout} className="bg-purple-600 text-white px-6 py-3 rounded-lg">
-          Proceed to payment
-          </button>
 
+          <div className="flex justify-center mt-4">
+            <button
+              onClick={handleCheckout}
+              className="bg-purple-600 text-white px-6 py-3 rounded-lg"
+            >
+              Proceed to payment
+            </button>
           </div>
         </div>
       )}
