@@ -2,13 +2,11 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Header from "@/app/components/Header/page";
-
 export default function ServiceDetails() {
     const { id } = useParams();
     const router = useRouter();
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
-
     
     useEffect(() => {
         const fetchItems = async () => {
@@ -33,22 +31,18 @@ export default function ServiceDetails() {
         }
     }, [id]);
     
-
     return (
         <div className="py-16 bg-white">
             <div className="container mx-auto px-8">
                 <Header isHomePage={false} />
-
                 {/* ✅ Back Button */}
                 <button 
                     onClick={() => router.back()} 
-                    className="bg-gray-200 px-4 py-2 rounded-md mb-4"
+                    className="bg-gray-200 text-black px-4 py-2 rounded-md mb-4"
                 >
                     ← Back
                 </button>
-
-                <h2 className="text-4xl font-bold text-center mb-6">Service Items</h2>
-
+                <h2 className="text-4xl font-bold text-center mb-6 text-black">Service Items</h2>
                 {loading ? (
                     <p className="text-center text-lg font-bold">Loading Items...</p>
                 ) : items.length === 0 ? (
@@ -58,7 +52,7 @@ export default function ServiceDetails() {
                         {items.map((item, index) => (
                             <div 
                                 key={item.id || `fallback-${index}`} 
-                                className="group relative bg-white shadow-lg rounded-lg border border-black p-4 cursor-pointer"
+                                className="group relative bg-white shadow-lg text-black rounded-lg border border-black p-4 cursor-pointer"
                                 onClick={() => {
                                     const itemName = item.furniturename || item.cakename || item.decorationname || item.bandname || item.mealname || item.flowername;
                                 
@@ -85,14 +79,12 @@ export default function ServiceDetails() {
                                     onError={(e) => (e.target.src = "/images/default.jpg")}
                                 />
 
-
                                 {/* ✅ Display Name and Price */}
                                 <div className="p-4 text-center">
                                 <h3 className="text-xl font-bold">
                                     {item.furniturename || item.cakename || item.decorationname || 
                                     item.bandname || item.mealname || item.flowername || "Unnamed Item"}
                                 </h3>
-
                                     <p className="text-gray-700 font-semibold">${item.price}</p>
                                 </div>
                             </div>
@@ -104,3 +96,4 @@ export default function ServiceDetails() {
         </div>
     );
 }
+
