@@ -5,7 +5,7 @@
 import Header from "@/app/components/Header/page";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { loadStripe } from "@stripe/stripe-js";
+// import { loadStripe } from "@stripe/stripe-js";
 
 const stripePromise = loadStripe("pk_test_51RBMQyRvozgqRzKOJw9aNhBfrgkptKFExmyx3giiFADMehxcVW4OtjzHwE5AubqLko2f3aEYWpT94zBtso4D9IpJ00JIRqxIwp");
 
