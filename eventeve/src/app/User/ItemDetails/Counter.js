@@ -17,7 +17,7 @@ export default function Counter({ item, userId, onAddToCart }) {
     setAdding(true);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/cart`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/cart/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -29,6 +29,7 @@ export default function Counter({ item, userId, onAddToCart }) {
           quantity,
         }),
       });
+   
 
       if (!res.ok) throw new Error("Failed to add to cart");
 
