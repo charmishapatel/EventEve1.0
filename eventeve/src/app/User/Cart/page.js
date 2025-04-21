@@ -5,9 +5,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { loadStripe } from "@stripe/stripe-js";
 
-// ✅ Automatically picks up from .env.local
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE;
-
 const stripePromise = loadStripe("pk_test_51RBMQyRvozgqRzKOJw9aNhBfrgkptKFExmyx3giiFADMehxcVW4OtjzHwE5AubqLko2f3aEYWpT94zBtso4D9IpJ00JIRqxIwp");
 
 const Cart = () => {
@@ -20,7 +17,7 @@ const Cart = () => {
   const handleCheckout = async () => {
     const stripe = await stripePromise;
 
-    const res = await fetch(`${BASE_URL}/api/payment/create-checkout-session`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/payment/create-checkout-session`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ items: cartItems }),
@@ -33,7 +30,7 @@ const Cart = () => {
   useEffect(() => {
     const fetchCart = async () => {
       try {
-        const res = await fetch(`${BASE_URL}/api/cart/${userId}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/cart/${userId}`);
         if (!res.ok) throw new Error("Failed to fetch cart items");
         const data = await res.json();
         console.log("🛒 Cart items fetched:", data);
@@ -55,7 +52,7 @@ const Cart = () => {
 
   const handleRemove = async (itemid) => {
     try {
-      const res = await fetch(`${BASE_URL}/api/cart/${userId}/${itemid}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/cart/${userId}/${itemid}`, {
         method: "DELETE",
       });
 
@@ -69,7 +66,6 @@ const Cart = () => {
 
       localStorage.setItem("cartCount", newCount);
       window.dispatchEvent(new Event("cartCountUpdated"));
-
     } catch (err) {
       console.error("❌ Error removing item:", err);
     }
