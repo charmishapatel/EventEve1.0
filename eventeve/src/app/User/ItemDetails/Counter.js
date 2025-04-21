@@ -17,7 +17,8 @@ export default function Counter({ item, userId, onAddToCart }) {
     setAdding(true);
 
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/cart/add`, {
+      // ✅ Store fetch response in res
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/cart/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -29,22 +30,21 @@ export default function Counter({ item, userId, onAddToCart }) {
           quantity,
         }),
       });
-   
 
       if (!res.ok) throw new Error("Failed to add to cart");
 
       alert("✅ Item added to cart");
       if (onAddToCart) onAddToCart(quantity);
+
+      // ✅ Update cart count in localStorage
+      const currentCount = localStorage.getItem("cartCount") || 0;
+      localStorage.setItem("cartCount", parseInt(currentCount) + quantity);
+      window.dispatchEvent(new Event("cartCountUpdated"));
     } catch (err) {
       console.error("❌ Add to cart error:", err);
     } finally {
       setAdding(false);
     }
-
-    // Update cart count in localStorage
-    const currentCount = localStorage.getItem("cartCount") || 0;
-    localStorage.setItem("cartCount", parseInt(currentCount) + quantity);
-    window.dispatchEvent(new Event("cartCountUpdated"));
   };
 
   return (

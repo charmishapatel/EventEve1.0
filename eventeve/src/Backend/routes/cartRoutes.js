@@ -42,4 +42,26 @@ router.get("/cart/:userid", async (req, res) => {
   }
 });
 
+// ✅ Delete Cart Item for a User
+router.delete("/cart/:userid/:itemid", async (req, res) => {
+  const { userid, itemid } = req.params;
+
+  try {
+    const result = await pool.query(
+      "DELETE FROM cart WHERE userid = $1 AND itemid = $2 RETURNING *",
+      [userid, itemid]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "Item not found in cart" });
+    }
+
+    res.status(200).json({ message: "Item removed from cart" });
+  } catch (error) {
+    console.error("❌ Error removing item from cart:", error);
+    res.status(500).json({ error: "Failed to remove item from cart" });
+  }
+});
+
+
 module.exports = router;

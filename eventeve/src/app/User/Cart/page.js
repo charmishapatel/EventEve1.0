@@ -9,7 +9,7 @@ const stripePromise = loadStripe("pk_test_51RBMQyRvozgqRzKOJw9aNhBfrgkptKFExmyx3
 
 const Cart = () => {
   const router = useRouter();
-  const userId = 1; // Static user for now
+  const userId = 1; // Static user
 
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,14 +27,20 @@ const Cart = () => {
     await stripe.redirectToCheckout({ sessionId: id });
   };
 
+  const updateCartCount = (items) => {
+    const newCount = items.reduce((total, item) => total + item.quantity, 0);
+    localStorage.setItem("cartCount", newCount);
+    window.dispatchEvent(new Event("cartCountUpdated"));
+  };
+
   useEffect(() => {
     const fetchCart = async () => {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/cart/${userId}`);
         if (!res.ok) throw new Error("Failed to fetch cart items");
         const data = await res.json();
-        console.log("🛒 Cart items fetched:", data);
         setCartItems(data);
+        updateCartCount(data); // ✅ Sync cart count from DB
       } catch (err) {
         console.error("❌ Error loading cart:", err);
       } finally {
@@ -45,11 +51,6 @@ const Cart = () => {
     fetchCart();
   }, []);
 
-  const totalAmount = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0
-  );
-
   const handleRemove = async (itemid) => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/cart/${userId}/${itemid}`, {
@@ -58,18 +59,18 @@ const Cart = () => {
 
       if (!res.ok) throw new Error("Failed to remove item");
 
-      setCartItems((prev) => prev.filter((item) => item.itemid !== itemid));
-
-      const newCount = cartItems
-        .filter((item) => item.itemid !== itemid)
-        .reduce((total, item) => total + item.quantity, 0);
-
-      localStorage.setItem("cartCount", newCount);
-      window.dispatchEvent(new Event("cartCountUpdated"));
+      const updatedItems = cartItems.filter((item) => item.itemid !== itemid);
+      setCartItems(updatedItems);
+      updateCartCount(updatedItems);
     } catch (err) {
       console.error("❌ Error removing item:", err);
     }
   };
+
+  const totalAmount = cartItems.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
 
   return (
     <div className="min-h-screen bg-gray-100 text-black p-6">
@@ -124,19 +125,16 @@ const Cart = () => {
             </p>
           </div>
 
-          <div className="flex justify-center mt-4">
+          <div className="flex justify-center mt-4 gap-4 flex-wrap">
             <button
               className="w-[250px] bg-[#624DAD] text-white py-3 rounded-lg text-lg font-semibold"
               onClick={() => router.push("/User/Booking")}
             >
               Request Booking
             </button>
-          </div>
-
-          <div className="flex justify-center mt-4">
             <button
               onClick={handleCheckout}
-              className="bg-purple-600 text-white px-6 py-3 rounded-lg"
+              className="bg-purple-600 text-white px-6 py-3 rounded-lg text-lg font-semibold"
             >
               Proceed to payment
             </button>
