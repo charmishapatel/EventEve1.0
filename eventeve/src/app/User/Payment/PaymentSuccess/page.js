@@ -33,6 +33,14 @@ export default function PaymentSuccess() {
       <Header isHomePage={false} />
       <h1 className="text-4xl font-bold text-green-600 mb-4">Payment Successful 🎉</h1>
       <p className="text-lg text-gray-700">Thank you for your booking!</p>
+      <div className="mt-8">
+    <button
+    onClick={() => window.location.href = "/User/HomePage"}
+    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg text-lg font-semibold transition"
+  >
+    Go to Home Page
+  </button>
+  </div>
     </div>
   );
 }

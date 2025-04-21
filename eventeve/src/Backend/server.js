@@ -16,6 +16,9 @@ const itemRoutes = require("./routes/itemRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 const authRoutes = require("./routes/authRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
+const bookingCleanupRoute = require("./routes/bookingCleanupRoute");
+
 
 // vendor (you can uncomment and use these when ready)
 // const contractRoutes = require("./routes/contractRoutes");
@@ -33,7 +36,12 @@ app.use("/api", serviceRoutes);
 app.use("/api", itemRoutes);
 app.use("/api", cartRoutes);
 app.use("/api", authRoutes);
-app.use("/api", bookingRoutes);
+// app.use("/api", bookingRoutes);
+app.use("/", bookingRoutes); // ✅ Mounts all routes at root level
+app.use("/api/payment", paymentRoutes);
+app.use("/api/booking-cleanup", bookingCleanupRoute);
+
+
 
 // vendor (same here if needed)
 // app.use("/api", contractRoutes);
