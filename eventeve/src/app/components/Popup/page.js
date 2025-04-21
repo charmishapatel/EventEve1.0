@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -10,84 +11,94 @@ import {
 } from "@/Firebase/config/firebaseConfig";
 
 export default function Login() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isRegisterPopupVisible, setRegisterPopupVisible] = useState(false);
-  const [userType, setUserType] = useState("");
+  const [userType, setUserType] = useState(""); // "vendor" or "user"
+  const router = useRouter();
 
-  // 🔐 Email Login
+  // 🔐 Handle Email Login
   const handleLogin = async (e) => {
     e.preventDefault();
+  
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const token = await userCredential.user.getIdToken();
+  
+      // const response = await fetch("http://localhost:5000/api/login", {
+        await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/login`, {
 
-      const response = await fetch("http://localhost:5000/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
-
-      const result = await response.json();
-      console.log("Login result:", result);
-
-      if (response.ok) {
-        alert("Login successful!");
-
-        if (result.role === "user") {
-          router.push("/User/HomePage");
-        } else if (result.role === "vendor") {
-          router.push("/Vendor/HomePage");
-        } else {
-          alert("Unknown role");
+  
+      if (!response.ok) throw new Error("Login verification failed");
+  
+      const userData = await response.json(); // { role: "vendor", status: "Pending" }
+  
+      console.log("✅ User data from backend:", userData);
+  
+      alert("Login successful!");
+  
+      // ✅ Redirect based on role and status
+      if (userData.role === "vendor") {
+        if (userData.status === "Approved") {
+          router.push("/Vendor/VendorDashboard");
+        } else if (userData.status === "Pending") {
+          alert("Your vendor account is pending approval.");
+          router.push("/Vendor/ApprovalPending"); // optional page
+        } else if (userData.status === "Rejected") {
+          alert("Your vendor registration has been rejected.");
         }
       } else {
-        alert(result.message || "Login failed!");
+        // Optional: Redirect regular user
+        router.push("/User/HomePage"); // change to your actual user homepage route
       }
+  
     } catch (error) {
       console.error("❌ Login error:", error.message);
       alert("Login failed!");
     }
   };
+  
+  
 
-  // 🟦 Google Sign-in
+  // 🟦 Handle Google Sign-in
   const handleGoogleSignIn = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const token = await result.user.getIdToken();
 
-      const response = await fetch("http://localhost:5000/api/login", {
+      // await fetch("http://localhost:5000/api/login", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      // });
+
+
+      await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
+      
 
-      const data = await response.json();
-
-      if (response.ok) {
-        alert(`Welcome, ${result.user.displayName}!`);
-        if (data.role === "user") {
-          router.push("/User/HomePage");
-        } else if (data.role === "vendor") {
-          router.push("/Vendor/HomePage");
-        } else {
-          alert("Unknown role — cannot redirect.");
-        }
-      } else {
-        alert(data.message || "Login failed at backend.");
-      }
+      console.log("✅ Google Sign-In:", result.user);
+      alert(`Welcome, ${result.user.displayName}!`);
     } catch (error) {
       console.error("❌ Google Sign-In Error:", error.message);
       alert("Google Sign-In Failed!");
     }
   };
 
-  // 🆕 Signup
+  // 🆕 Handle Email Signup (with role)
   const handleSignup = async (e) => {
     e.preventDefault();
     if (!userType) {
@@ -99,40 +110,45 @@ export default function Login() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const token = await userCredential.user.getIdToken();
 
-      const endpoint =
-        userType === "vendor"
-          ? "http://localhost:5000/api/signup/vendor"
-          : "http://localhost:5000/api/signup/user";
+      // const endpoint =
+      //   userType === "vendor"
+      //     ? "http://localhost:5000/api/signup/vendor"
+      //     : "http://localhost:5000/api/signup/user";
 
-      const response = await fetch(endpoint, {
+      // await fetch(endpoint, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      //   body: JSON.stringify({
+      //     userType,
+      //   }),
+      // });
+
+
+      await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ userType }),
       });
+      
 
-      if (response.ok) {
-        alert("Signup successful!");
-        setRegisterPopupVisible(false);
+      console.log("✅ Signup successful");
+      alert("Signup successful!");
+      setRegisterPopupVisible(false);
 
-        if (userType === "user") {
-          router.push("/User/HomePage");
-        } else if (userType === "vendor") {
-          router.push("/Vendor/VendorDashboard");
-        }
-      } else {
-        const errorData = await response.json();
-        alert(errorData.message || "Signup failed.");
-      }
+
+     
+      
     } catch (error) {
       console.error("❌ Signup error:", error.message);
       alert("Signup failed!");
     }
   };
 
-  // 🧩 JSX UI
   return (
     <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
       {/* Login Box */}
