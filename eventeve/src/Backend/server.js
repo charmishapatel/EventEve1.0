@@ -15,6 +15,7 @@ const serviceRoutes = require("./routes/serviceRoutes");
 const itemRoutes = require("./routes/itemRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 const authRoutes = require("./routes/authRoutes");
+const bookingRoutes = require("./routes/bookingRoutes");
 
 // vendor (you can uncomment and use these when ready)
 // const contractRoutes = require("./routes/contractRoutes");
@@ -32,6 +33,7 @@ app.use("/api", serviceRoutes);
 app.use("/api", itemRoutes);
 app.use("/api", cartRoutes);
 app.use("/api", authRoutes);
+app.use("/api", bookingRoutes);
 
 // vendor (same here if needed)
 // app.use("/api", contractRoutes);
