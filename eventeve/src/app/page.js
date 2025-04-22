@@ -7,6 +7,11 @@ export default function Page() {
     <div>
       <Homepage></Homepage>
 
+
+      {/* <ul>
+        <li><Link href="Vendor/VendorDashboard">Go to vendor Dashboard</Link></li>
+      </ul> */}
+
       <ul>
       {/* <li> <Link href="/components/Header"> Go to header </Link></li> */}
       {/* <li><Link href="/User/HomePage"> Go to Homepage </Link>  </li> */}

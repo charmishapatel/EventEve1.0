@@ -17,13 +17,12 @@ export default function SupportPage() {
     setResponse("");
 
     try {
-      const res = await fetch("/api/vendor/support", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/vendor/support`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-
-      const data = await res.json();
+     const data = await res.json();
       if (res.ok) {
         setResponse("✅ Submitted successfully!");
         setForm({ name: "", email: "", message: "" });

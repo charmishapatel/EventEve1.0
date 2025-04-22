@@ -3,6 +3,7 @@ import React, { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/app/components/Header/page";
 import SignatureCanvas from "react-signature-canvas";
+import { getAuth } from "firebase/auth"; 
 
 export default function ContractPage() {
   const [agreed, setAgreed] = useState(false);
@@ -10,58 +11,58 @@ export default function ContractPage() {
   const signatureRef = useRef();
   const router = useRouter();
 
-  const clearSignature = () => {
-    signatureRef.current.clear();
-  };
+  const clearSignature = () => signatureRef.current.clear();
 
-  const handleSubmit = async () => {
-    if (!agreed) {
-      alert("You must agree to the terms and conditions before submitting.");
-      return;
+const handleSubmit = async () => {
+  if (!agreed) return alert("✅ Please agree to the terms before submitting.");
+  if (signatureRef.current.isEmpty()) return alert("✍ Please sign before submitting.");
+
+  const signatureData = signatureRef.current.getTrimmedCanvas().toDataURL("image/png");
+
+  try {
+    setIsSubmitting(true);
+
+    // 🔐 Get Firebase token
+    const auth = getAuth();
+    const token = await auth.currentUser.getIdToken();
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/vendor/contracts`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // ✅ send token!
+      },
+      body: JSON.stringify({
+        agreed: true,
+        signature: signatureData,
+      }),
+    });
+
+    const result = await res.json(); // only do this AFTER checking res.ok
+
+    if (res.ok) {
+      alert("✅ Contract submitted successfully!");
+      router.push("/Vendor/Contract/Submission");
+    } else {
+      alert("❌ Error: " + result.error);
     }
 
-    if (signatureRef.current.isEmpty()) {
-      alert("Please provide your signature before submitting.");
-      return;
-    }
+  } catch (err) {
+    console.error("❌ Submission failed:", err);
+    alert("❌ Server error");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
-    const signatureData = signatureRef.current.getTrimmedCanvas().toDataURL("image/png");
-
-    try {
-      setIsSubmitting(true);
-      const res = await fetch("/api/vendor/contract", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          vendorId: 1, // Static for now
-          agreed: true,
-          signature: signatureData,
-        }),
-      });
-
-      const result = await res.json();
-      if (res.ok) {
-        alert("Contract submitted successfully!");
-        router.push("/Vendor/contract/submission");
-      } else {
-        alert("Error: " + result.error);
-      }
-    } catch (error) {
-      alert("Submission failed: " + error.message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <div className="relative">
       <Header />
-
       <div className="flex flex-col items-center justify-center bg-white min-h-screen p-8 border">
         <div className="w-full max-w-3xl bg-white p-8 shadow-md rounded-lg">
           <h2 className="text-3xl font-semibold mb-6">Service Agreement</h2>
 
-          {/* Updated PDF Link */}
           <a
             href="/documents/EventEve_Service_Agreement.pdf"
             target="_blank"
@@ -79,9 +80,7 @@ export default function ContractPage() {
               onChange={() => setAgreed(!agreed)}
               className="mr-2 w-5 h-5"
             />
-            <label htmlFor="agree" className="text-lg">
-              Agree to terms and conditions
-            </label>
+            <label htmlFor="agree" className="text-lg">Agree to terms and conditions</label>
           </div>
 
           <div className="mt-4">

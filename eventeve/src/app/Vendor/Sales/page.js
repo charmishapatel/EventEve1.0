@@ -13,6 +13,7 @@ import {
 import dayjs from "dayjs";
 
 import Header from "@/app/components/Header/page";
+import { getAuth } from "firebase/auth"; // at top
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -21,15 +22,24 @@ export default function SalesReport() {
   const [sales, setSales] = useState([]);
 
   useEffect(() => {
-    const fetchSales = async () => {
-      try {
-        const res = await fetch("/api/vendor/sales");
-        const data = await res.json();
-        setSales(data.sales || []);
-      } catch (err) {
-        console.error("Failed to fetch sales:", err);
-      }
-    };
+  const fetchSales = async () => {
+  try {
+    const auth = getAuth();
+    const token = await auth.currentUser.getIdToken();
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/vendor/sales`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json();
+    setSales(data.sales || []);
+  } catch (err) {
+    console.error("❌ Failed to fetch sales:", err);
+  }
+};
+
 
     fetchSales();
   }, []);
@@ -42,21 +52,20 @@ export default function SalesReport() {
     } else if (selectedTime === "Last Week") {
       return saleDate.isAfter(now.subtract(7, "day"));
     }
-    return true; // All time
+    return true;
   });
 
   const totalIncome = filteredSales.reduce((sum, s) => sum + Number(s.total_income), 0);
   const customerCount = filteredSales.reduce((sum, s) => sum + Number(s.total_customers), 0);
-  const rating = filteredSales.length ? Number(filteredSales[filteredSales.length - 1].rating) : 0;
+  const rating = filteredSales.length ? Number(filteredSales.at(-1).rating) : 0;
 
   const uniqueLabels = [...new Set(filteredSales.map((s) => dayjs(s.report_month).format("MMM D")))];
-
   const salesData = {
     labels: uniqueLabels,
     datasets: [
       {
         label: "Income",
-        backgroundColor: "#6495ED",
+        backgroundColor: "#7C3AED",
         data: filteredSales.map((s) => Number(s.total_income)),
       },
     ],
@@ -69,7 +78,7 @@ export default function SalesReport() {
         <div className="w-full max-w-5xl bg-white p-8 shadow-md rounded-lg">
           <h2 className="text-3xl font-semibold mb-6">Sales Report</h2>
 
-          {/* Current Rating */}
+          {/* Rating Box */}
           <div className="flex items-center justify-between bg-gray-100 p-4 rounded-lg">
             <div>
               <h3 className="text-lg font-semibold">Your Current Rating</h3>
@@ -95,9 +104,9 @@ export default function SalesReport() {
             </div>
           </div>
 
-          {/* Product Views Chart */}
+          {/* Bar Chart */}
           <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-2">Product Views</h3>
+            <h3 className="text-lg font-semibold mb-2">Monthly Income</h3>
             <select
               className="border rounded-md p-2 mb-2"
               value={selectedTime}

@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -20,51 +19,47 @@ export default function Login() {
   // 🔐 Handle Email Login
   const handleLogin = async (e) => {
     e.preventDefault();
-  
+
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const token = await userCredential.user.getIdToken();
-  
-      // const response = await fetch("http://localhost:5000/api/login", {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/login`, {
 
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
-  
-      if (!response.ok) throw new Error("Login verification failed");
-  
-      const userData = await response.json(); // { role: "vendor", status: "Pending" }
-  
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || errorData.error || "Login failed");
+      }
+
+      const userData = await response.json(); // { role, status }
+
       console.log("✅ User data from backend:", userData);
-  
       alert("Login successful!");
-  
-      // ✅ Redirect based on role and status
+
       if (userData.role === "vendor") {
         if (userData.status === "Approved") {
           router.push("/Vendor/VendorDashboard");
         } else if (userData.status === "Pending") {
           alert("Your vendor account is pending approval.");
-          router.push("/Vendor/ApprovalPending"); // optional page
+          router.push("/Vendor/ApprovalPending");
         } else if (userData.status === "Rejected") {
           alert("Your vendor registration has been rejected.");
         }
       } else {
-        // Optional: Redirect regular user
-        router.push("/User/HomePage"); // change to your actual user homepage route
+        router.push("/User/HomePage");
       }
-  
+
     } catch (error) {
       console.error("❌ Login error:", error.message);
-      alert("Login failed!");
+      alert(`Login failed: ${error.message}`);
     }
   };
-  
-  
 
   // 🟦 Handle Google Sign-in
   const handleGoogleSignIn = async () => {
@@ -72,29 +67,24 @@ export default function Login() {
       const result = await signInWithPopup(auth, googleProvider);
       const token = await result.user.getIdToken();
 
-      // await fetch("http://localhost:5000/api/login", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     Authorization: `Bearer ${token}`,
-      //   },
-      // });
-
-
-      await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/login`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
-      
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || errorData.error || "Google Login failed");
+      }
 
       console.log("✅ Google Sign-In:", result.user);
       alert(`Welcome, ${result.user.displayName}!`);
     } catch (error) {
       console.error("❌ Google Sign-In Error:", error.message);
-      alert("Google Sign-In Failed!");
+      alert(`Google Sign-In Failed: ${error.message}`);
     }
   };
 
@@ -110,42 +100,31 @@ export default function Login() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const token = await userCredential.user.getIdToken();
 
-      // const endpoint =
-      //   userType === "vendor"
-      //     ? "http://localhost:5000/api/signup/vendor"
-      //     : "http://localhost:5000/api/signup/user";
+      const endpoint =
+        userType === "vendor"
+          ? `${process.env.NEXT_PUBLIC_API_BASE}/api/signup/vendor`
+          : `${process.env.NEXT_PUBLIC_API_BASE}/api/signup/user`;
 
-      // await fetch(endpoint, {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     Authorization: `Bearer ${token}`,
-      //   },
-      //   body: JSON.stringify({
-      //     userType,
-      //   }),
-      // });
-
-
-      await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/login`, {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
-      
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || errorData.error || "Signup failed");
+      }
 
       console.log("✅ Signup successful");
       alert("Signup successful!");
       setRegisterPopupVisible(false);
 
-
-     
-      
     } catch (error) {
       console.error("❌ Signup error:", error.message);
-      alert("Signup failed!");
+      alert(`Signup failed: ${error.message}`);
     }
   };
 
@@ -156,9 +135,7 @@ export default function Login() {
         <h1 className="text-2xl font-bold text-black mb-6 text-center">Login</h1>
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-bold text-black">
-              Email
-            </label>
+            <label htmlFor="email" className="block text-sm font-bold text-black">Email</label>
             <input
               type="text"
               id="email"
@@ -171,9 +148,7 @@ export default function Login() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-bold text-black">
-              Password
-            </label>
+            <label htmlFor="password" className="block text-sm font-bold text-black">Password</label>
             <input
               type="password"
               id="password"
@@ -218,9 +193,7 @@ export default function Login() {
             <h1 className="text-2xl font-bold text-black mb-6 text-center">Sign Up</h1>
             <form onSubmit={handleSignup} className="space-y-4">
               <div>
-                <label htmlFor="email" className="block text-sm font-bold text-black">
-                  Email
-                </label>
+                <label htmlFor="email" className="block text-sm font-bold text-black">Email</label>
                 <input
                   type="text"
                   id="email"
@@ -233,9 +206,7 @@ export default function Login() {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-bold text-black">
-                  Password
-                </label>
+                <label htmlFor="password" className="block text-sm font-bold text-black">Password</label>
                 <input
                   type="password"
                   id="password"

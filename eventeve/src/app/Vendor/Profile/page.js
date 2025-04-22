@@ -1,9 +1,12 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { getAuth } from "firebase/auth";
 import Header from "../../components/Header/page";
 
 export default function EditProfile() {
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -15,23 +18,45 @@ export default function EditProfile() {
     postalCode: "",
   });
 
-  // Fetch profile data
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:5000";
+
+  // ✅ Fetch vendor profile data
   const fetchData = async () => {
     try {
-      const res = await fetch("/api/vendor/profile");
-      const data = await res.json();
+      const auth = getAuth();
+      const user = auth.currentUser;
+
+      if (!user) {
+        console.error("User not logged in.");
+        alert("Please log in first.");
+        return;
+      }
+
+      const token = await user.getIdToken();
+
+      const res = await axios.get(`${apiBase}/api/vendor/profile`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = res.data;
+
       setFormData({
         firstName: data.first_name || "",
         lastName: data.last_name || "",
         email: data.email || "",
-        contact: data.contact_number || "",
+        contact: data.phonenumber || "",
         street: data.address || "",
         city: data.city || "",
         province: data.province || "",
         postalCode: data.postal_code || "",
       });
     } catch (error) {
-      console.error("Failed to fetch profile:", error);
+      console.error("❌ Error fetching profile:", error);
+      alert("Could not fetch profile data");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -39,58 +64,60 @@ export default function EditProfile() {
     fetchData();
   }, []);
 
-  // Toggle Edit Mode & Save
+  // ✅ Handle Save / Edit toggle
   const handleEditClick = async (e) => {
     e.preventDefault();
-
     if (isEditing) {
-      // Save profile
       try {
-        const res = await fetch("/api/vendor/profile", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
+        const auth = getAuth();
+        const token = await auth.currentUser.getIdToken();
+
+        await axios.put(`${apiBase}/api/vendor/profile`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
-        if (!res.ok) throw new Error("Failed to update profile");
-        alert("Profile updated successfully");
+
+        alert("✅ Profile updated successfully");
       } catch (error) {
-        alert("Error updating profile: " + error.message);
+        console.error("❌ Error updating profile:", error);
+        alert("Error updating profile");
       }
     }
-
     setIsEditing((prev) => !prev);
   };
 
-  // Cancel Editing
   const handleCancel = () => {
-    fetchData(); // reset to original data
+    fetchData();
     setIsEditing(false);
   };
 
-  // Handle field change
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-xl">
+        Loading profile...
+      </div>
+    );
+  }
+
   return (
     <div className="relative">
-      {/* Header */}
       <Header />
-
-      {/* Form Section */}
       <div className="flex flex-col items-center justify-center bg-white min-h-screen p-8 border">
         <div className="w-full max-w-3xl bg-white p-8 shadow-md rounded-lg relative">
           <h2 className="text-3xl font-semibold mb-6">Profile</h2>
 
-          {/* Edit/Save Button */}
           <button
             className="absolute top-8 right-8 text-gray-600 hover:text-black"
             onClick={handleEditClick}
           >
-            {isEditing ? "💾 Save" : "✏️ Edit"}
+            {isEditing ? "💾 Save" : "✏ Edit"}
           </button>
 
-          {/* Form */}
           <form className="space-y-6" onSubmit={handleEditClick}>
             {/* Name */}
             <div>
@@ -117,7 +144,7 @@ export default function EditProfile() {
               </div>
             </div>
 
-            {/* Email & Contact Number */}
+            {/* Email & Contact */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block font-semibold mb-1">Email</label>
@@ -126,9 +153,8 @@ export default function EditProfile() {
                   name="email"
                   placeholder="Email"
                   className="border p-2 w-full rounded-md"
-                  disabled={!isEditing}
+                  disabled
                   value={formData.email}
-                  onChange={handleChange}
                 />
               </div>
               <div>
@@ -188,7 +214,6 @@ export default function EditProfile() {
               />
             </div>
 
-            {/* Buttons */}
             {isEditing && (
               <div className="flex justify-between">
                 <button

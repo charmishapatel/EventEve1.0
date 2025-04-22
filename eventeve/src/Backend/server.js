@@ -1,16 +1,19 @@
 const express = require("express");
 const cors = require("cors");
-const pool = require("./config/database"); // ✅ PostgreSQL connection
+const pool = require("./config/database");
 
-// ✅ Firebase Admin SDK Setup
 const admin = require("firebase-admin");
-const serviceAccount = require("../Firebase/firebase-adminsdk.json"); // Adjust path if needed
+const serviceAccount = require("../Firebase/firebase-adminsdk.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-// Import Routes
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// ✅ Import Routes
 const serviceRoutes = require("./routes/serviceRoutes");
 const itemRoutes = require("./routes/itemRoutes");
 const cartRoutes = require("./routes/cartRoutes");
@@ -19,45 +22,33 @@ const bookingRoutes = require("./routes/bookingRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const bookingCleanupRoute = require("./routes/bookingCleanupRoute");
 const userRoutes = require("./routes/userRoutes");
-const vendorRoutes = require("./routes/vendorRoutes");
 
+const vendorProfileRoutes = require("./routes/Vendor/vendorProfileRoutes");
+const vendorDocumentRoutes = require("./routes/Vendor/vendorDocumentRoutes");
+const vendorContractRoutes = require("./routes/Vendor/vendorContractRoutes"); // ✅ You're using this!
+const vendorSalesRoutes = require("./routes/Vendor/vendorSalesRoutes");
+const vendorSupportRoutes = require("./routes/Vendor/vendorSupportRoutes");
 
-
-
-// vendor (you can uncomment and use these when ready)
-// const contractRoutes = require("./routes/contractRoutes");
-// const documentRoutes = require("./routes/documentRoutes");
-// const salesRoutes = require("./routes/salesRoutes");
-// const vprofileRoutes = require("./routes/vprofileRoutes");
-// const supportRoutes = require("./routes/supportRoutes");
-
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-// Use Routes
+// ✅ Use Routes
 app.use("/api", serviceRoutes);
 app.use("/api", itemRoutes);
 app.use("/api", cartRoutes);
 app.use("/api", authRoutes);
-// app.use("/api", bookingRoutes);
-app.use("/", bookingRoutes); // ✅ Mounts all routes at root level
+app.use("/api", userRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/booking-cleanup", bookingCleanupRoute);
-app.use("/api", userRoutes);
-app.use("/api", vendorRoutes);
+app.use("/", bookingRoutes);
 
 
+// Vendor
+app.use("/api/vendor", vendorProfileRoutes); 
+app.use("/api/vendor", vendorDocumentRoutes);
+app.use("/api/vendor/contracts", vendorContractRoutes);
+app.use("/api/vendor/sales", vendorSalesRoutes);
+app.use("/api/vendor", vendorSupportRoutes);
 
 
-// vendor (same here if needed)
-// app.use("/api", contractRoutes);
-// app.use("/api", documentRoutes);
-// app.use("/api", salesRoutes);
-// app.use("/api", vprofileRoutes);
-// app.use("/api", supportRoutes);
-
-// 🛠️ Dynamic port for deployment
+// ✅ Start Server
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, async () => {
