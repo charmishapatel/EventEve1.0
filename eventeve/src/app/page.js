@@ -5,12 +5,14 @@ import Link from "next/link";
 export default function Page() {
   return (
     <div>
-      <Homepage></Homepage>
+      {/* <Homepage></Homepage> */}
 
 
-      {/* <ul>
+      <ul>
         <li><Link href="Vendor/VendorDashboard">Go to vendor Dashboard</Link></li>
-      </ul> */}
+        <li><Link href="Admin/AdminDashboard">Go to Admin Dashboard</Link></li>
+        <li><Link href="/User/HomePage"> Go to Homepage </Link>  </li> 
+      </ul>
 
       <ul>
       {/* <li> <Link href="/components/Header"> Go to header </Link></li> */}

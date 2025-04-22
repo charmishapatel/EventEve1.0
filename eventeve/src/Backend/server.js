@@ -23,13 +23,19 @@ const paymentRoutes = require("./routes/paymentRoutes");
 const bookingCleanupRoute = require("./routes/bookingCleanupRoute");
 const userRoutes = require("./routes/userRoutes");
 
+// VENDOR
 const vendorProfileRoutes = require("./routes/Vendor/vendorProfileRoutes");
 const vendorDocumentRoutes = require("./routes/Vendor/vendorDocumentRoutes");
-const vendorContractRoutes = require("./routes/Vendor/vendorContractRoutes"); // ✅ You're using this!
+const vendorContractRoutes = require("./routes/Vendor/vendorContractRoutes"); 
 const vendorSalesRoutes = require("./routes/Vendor/vendorSalesRoutes");
 const vendorSupportRoutes = require("./routes/Vendor/vendorSupportRoutes");
 
-// ✅ Use Routes
+// AI
+const askRoutes = require("./routes/AIChatAssistant/askRoutes");
+
+
+
+// ✅ Use Routes USER
 app.use("/api", serviceRoutes);
 app.use("/api", itemRoutes);
 app.use("/api", cartRoutes);
@@ -40,12 +46,15 @@ app.use("/api/booking-cleanup", bookingCleanupRoute);
 app.use("/", bookingRoutes);
 
 
-// Vendor
+// VENDOR
 app.use("/api/vendor", vendorProfileRoutes); 
 app.use("/api/vendor", vendorDocumentRoutes);
 app.use("/api/vendor/contracts", vendorContractRoutes);
 app.use("/api/vendor/sales", vendorSalesRoutes);
 app.use("/api/vendor", vendorSupportRoutes);
+
+// AI
+app.use("/api/ask", askRoutes);
 
 
 // ✅ Start Server
