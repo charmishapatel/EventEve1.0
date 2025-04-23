@@ -75,6 +75,17 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../config/database");
 
+// ✅ GET all users
+router.get("/users", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM Users");
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
 // ✅ Get user info by email
 router.get("/userinfo/:email", async (req, res) => {
   const { email } = req.params;

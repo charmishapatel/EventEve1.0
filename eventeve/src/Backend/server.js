@@ -18,10 +18,15 @@ const serviceRoutes = require("./routes/serviceRoutes");
 const itemRoutes = require("./routes/itemRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 const authRoutes = require("./routes/authRoutes");
-const bookingRoutes = require("./routes/bookingRoutes");
+//const bookingRoutes = require("./routes/bookingRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const bookingCleanupRoute = require("./routes/bookingCleanupRoute");
 const userRoutes = require("./routes/userRoutes");
+const vendorRoutes = require("./routes/Admin/vendorRoutes");
+const reportsRoutes = require("./routes/Admin/reports");
+const bookingRoutes = require("./routes/Admin/booking");
+const userBookingRoutes = require("./routes/Admin/userBookingRoutes");
+
 
 // VENDOR
 const vendorProfileRoutes = require("./routes/Vendor/vendorProfileRoutes");
@@ -43,7 +48,11 @@ app.use("/api", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/booking-cleanup", bookingCleanupRoute);
-app.use("/", bookingRoutes);
+//app.use("/", bookingRoutes);
+app.use("/api/vendors", vendorRoutes);
+app.use("/api", reportsRoutes);
+app.use("/api", bookingRoutes);
+app.use("/api/admin", userBookingRoutes);
 
 
 // VENDOR
